@@ -1,4 +1,5 @@
 ﻿using Binance.Net.Clients;
+using Binance.Net.Enums;
 using CryptoExchange.Net.Authentication;
 using System;
 using System.Collections.Generic;
@@ -29,13 +30,17 @@ namespace TradeBot
 
             while (true)
             {
+                // Change Leverage
+                await client.UsdFuturesApi.Account.ChangeInitialLeverageAsync(symbol: "DOGEUSDT", leverage: 25);
+
                 await Task.Delay(10000);
 
                 Console.WriteLine("Score :" + score);
                 Console.WriteLine("Status :" + status);
                 Console.WriteLine("Position Price :" + positionPrice);
                 Console.WriteLine("Position Quantity :" + positionQuantity);
-
+                Console.WriteLine("Position Side :" + positionSide);
+             
 
                 // Volume Degerini al
                 var volume = await client.UsdFuturesApi.ExchangeData.GetTakerBuySellVolumeRatioAsync(symbol: "DOGEUSDT",
@@ -76,6 +81,7 @@ namespace TradeBot
                         positionPrice = latestPrice;
                         positionQuantity = 200 / latestPrice;
                         status = true;
+                        await client.UsdFuturesApi.Trading.PlaceOrderAsync(symbol: "DOGEUSDT", side: OrderSide.Buy, type: FuturesOrderType.Market, quantity: positionQuantity * 25);
                     }
                     else if (status == true)
                     {
@@ -84,6 +90,7 @@ namespace TradeBot
                         {
                             score += (positionQuantity * positionPrice) - (positionQuantity * latestPrice);
                             status = false;
+                            await client.UsdFuturesApi.Trading.PlaceOrderAsync(symbol: "DOGEUSDT", side: OrderSide.Sell, type: FuturesOrderType.Market, quantity: positionQuantity * 25);
                         }
                     }
                 }
@@ -97,6 +104,7 @@ namespace TradeBot
                         positionPrice = latestPrice;
                         positionQuantity = 200 / latestPrice;
                         status = true;
+                        await client.UsdFuturesApi.Trading.PlaceOrderAsync(symbol: "DOGEUSDT", side: OrderSide.Sell, type: FuturesOrderType.Market, quantity: positionQuantity * 25);
                     }
                     else if (status == true)
                     {
@@ -105,6 +113,7 @@ namespace TradeBot
                         {
                             score += (positionQuantity * latestPrice) - (positionQuantity * positionPrice);
                             status = false;
+                            await client.UsdFuturesApi.Trading.PlaceOrderAsync(symbol: "DOGEUSDT", side: OrderSide.Sell, type: FuturesOrderType.Market, quantity: positionQuantity * 25);
                         }
                     }
                 }
