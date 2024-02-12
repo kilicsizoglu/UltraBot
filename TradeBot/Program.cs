@@ -29,7 +29,7 @@ namespace TradeBot
 
             while (true)
             {
-                Thread.Sleep(10000);
+                await Task.Delay(10000);
 
                 Console.WriteLine("Score :" + score);
                 Console.WriteLine("Status :" + status);
@@ -40,6 +40,9 @@ namespace TradeBot
                 // Volume Degerini al
                 var volume = await client.UsdFuturesApi.ExchangeData.GetTakerBuySellVolumeRatioAsync(symbol: "DOGEUSDT",
                     period: Binance.Net.Enums.PeriodInterval.FiveMinutes);
+
+                if (volume == null)
+                    continue;
 
                 decimal buyVolume = 0;
                 decimal sellVolume = 0;
@@ -53,6 +56,8 @@ namespace TradeBot
                 Console.WriteLine("Buy : " + buyVolume + " Sell : " + sellVolume);
 
                 var price = await client.UsdFuturesApi.ExchangeData.GetPricesAsync();
+                if (price == null)
+                    continue;
                 decimal latestPrice = 0;
                 
                 foreach (var item in price.Data)
