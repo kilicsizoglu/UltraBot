@@ -14,12 +14,14 @@ namespace TradeBot
     {
         static async Task Main(string[] args)
         {
-
+            bool locked = false;
             bool status = false;
             decimal positionPrice = 0;
             decimal positionQuantity = 0;
             string positionSide = "";
             decimal score = 0;
+            decimal oldBuyVolume = 0;
+            decimal oldSellVolume = 0;
 
             BinanceRestClient.SetDefaultOptions(options =>
             {
@@ -71,7 +73,20 @@ namespace TradeBot
                         latestPrice = item.Price;
                 }
 
-                if (buyVolume > sellVolume)
+                if (oldSellVolume < sellVolume && positionSide == "SELL")
+                {
+                    locked = true;
+                }
+                else if (oldBuyVolume > buyVolume && positionSide == "BUY")
+                {
+                    locked = true;
+                }
+                else
+                {
+                    locked = false;
+                }
+
+                if (buyVolume > sellVolume && locked == false)
                 {
                     if (status == false)
                     {
@@ -94,7 +109,13 @@ namespace TradeBot
                         }
                     }
                 }
-                if (buyVolume < sellVolume)
+                if (oldSellVolume < sellVolume && positionSide == "SELL")
+                {
+                    score += (positionQuantity * positionPrice) - (positionQuantity * latestPrice);
+                    status = false;
+                    await client.UsdFuturesApi.Trading.PlaceOrderAsync(symbol: "DOGEUSDT", side: OrderSide.Sell, type: FuturesOrderType.Market, quantity: positionQuantity * 25);
+                }
+                if (buyVolume < sellVolume && locked == false)
                 {
                     if (status == false)
                     {
@@ -113,10 +134,19 @@ namespace TradeBot
                         {
                             score += (positionQuantity * latestPrice) - (positionQuantity * positionPrice);
                             status = false;
-                            await client.UsdFuturesApi.Trading.PlaceOrderAsync(symbol: "DOGEUSDT", side: OrderSide.Sell, type: FuturesOrderType.Market, quantity: positionQuantity * 25);
+                            await client.UsdFuturesApi.Trading.PlaceOrderAsync(symbol: "DOGEUSDT", side: OrderSide.Buy, type: FuturesOrderType.Market, quantity: positionQuantity * 25);
                         }
                     }
                 }
+                if (oldBuyVolume > buyVolume && positionSide == "BUY")
+                {
+                    score += (positionQuantity * latestPrice) - (positionQuantity * positionPrice);
+                    status = false;
+                    await client.UsdFuturesApi.Trading.PlaceOrderAsync(symbol: "DOGEUSDT", side: OrderSide.Buy, type: FuturesOrderType.Market, quantity: positionQuantity * 25);
+                }
+
+                oldBuyVolume = buyVolume;
+                oldSellVolume = sellVolume;
 
             }
 
