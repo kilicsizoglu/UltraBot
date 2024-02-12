@@ -32,6 +32,10 @@ namespace TradeBot
                 Thread.Sleep(10000);
 
                 Console.WriteLine("Score :" + score);
+                Console.WriteLine("Status :" + status);
+                Console.WriteLine("Position Price :" + positionPrice);
+                Console.WriteLine("Position Quantity :" + positionQuantity);
+
 
                 // Volume Degerini al
                 var volume = await client.UsdFuturesApi.ExchangeData.GetTakerBuySellVolumeRatioAsync(symbol: "DOGEUSDT",
