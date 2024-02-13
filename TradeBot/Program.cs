@@ -87,19 +87,6 @@ namespace TradeBot
                         latestPrice = item.Price;
                 }
 
-                if (oldSellVolume < sellVolume && positionSide == "SELL")
-                {
-                    locked = true;
-                }
-                else if (oldBuyVolume > buyVolume && positionSide == "BUY")
-                {
-                    locked = true;
-                }
-                else
-                {
-                    locked = false;
-                }
-
                 if (buyVolume > sellVolume && locked == false)
                 {
                     if (status == false)
@@ -123,12 +110,6 @@ namespace TradeBot
                         }
                     }
                 }
-                if (oldSellVolume < sellVolume && positionSide == "SELL")
-                {
-                    score += (positionQuantity * positionPrice) - (positionQuantity * latestPrice);
-                    status = false;
-                    await client.UsdFuturesApi.Trading.PlaceOrderAsync(symbol: "DOGEUSDT", side: OrderSide.Sell, type: FuturesOrderType.Market, quantity: positionQuantity * 25);
-                }
                 if (buyVolume < sellVolume && locked == false)
                 {
                     if (status == false)
@@ -151,12 +132,6 @@ namespace TradeBot
                             await client.UsdFuturesApi.Trading.PlaceOrderAsync(symbol: "DOGEUSDT", side: OrderSide.Buy, type: FuturesOrderType.Market, quantity: positionQuantity * 25);
                         }
                     }
-                }
-                if (oldBuyVolume > buyVolume && positionSide == "BUY")
-                {
-                    score += (positionQuantity * latestPrice) - (positionQuantity * positionPrice);
-                    status = false;
-                    await client.UsdFuturesApi.Trading.PlaceOrderAsync(symbol: "DOGEUSDT", side: OrderSide.Buy, type: FuturesOrderType.Market, quantity: positionQuantity * 25);
                 }
 
                 oldBuyVolume = buyVolume;
