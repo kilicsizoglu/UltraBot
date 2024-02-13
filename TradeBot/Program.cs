@@ -3,6 +3,7 @@ using Binance.Net.Enums;
 using CryptoExchange.Net.Authentication;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -14,6 +15,7 @@ namespace TradeBot
     {
         static async Task Main(string[] args)
         {
+            
             bool locked = false;
             bool status = false;
             decimal positionPrice = 0;
@@ -22,6 +24,18 @@ namespace TradeBot
             decimal score = 0;
             decimal oldBuyVolume = 0;
             decimal oldSellVolume = 0;
+
+            decimal readScore = ReadScoreFromFile(".\\score.txt");
+            if (readScore != -1)
+            {
+                Console.WriteLine("Score read from file: " + readScore);
+                score = readScore;
+            }
+            else
+            {
+                Console.WriteLine("Error reading score from file. Starting from 0.");
+                WriteScoreToFile(".\\score.txt", score);
+            }
 
             BinanceRestClient.SetDefaultOptions(options =>
             {
@@ -148,8 +162,52 @@ namespace TradeBot
                 oldBuyVolume = buyVolume;
                 oldSellVolume = sellVolume;
 
+                WriteScoreToFile(".\\score.txt", score);
+
+
             }
 
+        }
+
+        static void WriteScoreToFile(string filePath, decimal score)
+        {
+            try
+            {
+                // Dosyayı aç
+                using (StreamWriter writer = new StreamWriter(filePath))
+                {
+
+                    // Skoru dosyaya yaz
+                    writer.WriteLine(score);
+                    writer.Flush();
+                    writer.Close();
+                }
+            }
+            catch (Exception e)
+            {
+                // Hata durumunda ekrana yazdır
+                Console.WriteLine("Error writing score to file: " + e.Message);
+            }
+        }
+
+        // Dosyadan skoru okuma fonksiyonu
+        static decimal ReadScoreFromFile(string filePath)
+        {
+            try
+            {
+                // Dosyayı aç
+                using (StreamReader reader = new StreamReader(filePath))
+                {
+                    // Dosyanın sonuna kadar oku ve skoru döndür
+                    return decimal.Parse(reader.ReadLine());
+                }
+            }
+            catch (Exception e)
+            {
+                // Hata durumunda -1 döndür
+                Console.WriteLine("Error reading score from file: " + e.Message);
+                return -1;
+            }
         }
     }
 }
